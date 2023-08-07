@@ -1,5 +1,5 @@
-import { ORIGIN } from "../config.js";
 import cors from "cors";
+import { ORIGIN } from "../config.js";
 
 const corsOptions = {
   origin: ORIGIN,

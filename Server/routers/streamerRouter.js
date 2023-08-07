@@ -1,8 +1,8 @@
-import StreamersController from "../controllers/streamersControllers.js";
+import streamersController from "../controllers/streamersControllers.js";
 import { Router } from "express";
 
 const streamerRouter = Router();
 
-streamerRouter.get("/:id", StreamersController.getStreamerById);
+streamerRouter.get("/:id", streamersController.getStreamerByIdController);
 
 export default streamerRouter;

@@ -1,68 +1,74 @@
-import Streamer from "../models/streamerModel.js";
-import validateStreamer from "../utils/validation.js";
 import asyncHandler from "express-async-handler";
+import streamerService from "../services/streamerServices.js";
 import { io } from "../index.js";
 
-const StreamersController = {
-  getAllStreamers: asyncHandler(async (_, res, next) => {
-    const streamers = await Streamer.find().exec();
-    res.send(streamers);
+const streamersController = {
+  getAllStreamersController: asyncHandler(async (_, res, next) => {
+    try {
+      const allStreamers = await streamerService.fetchAllStreamers();
+      res.send(allStreamers);
+    } catch (error) {
+      next(error);
+    }
   }),
 
-  addStreamer: asyncHandler(async (req, res, next) => {
-    const { error } = validateStreamer(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
-
+  createStreamerController: asyncHandler(async (req, res, next) => {
+    const { name, streamingPlatform, description } = req.body;
     const streamerData = {
-      name: req.body.name,
-      streamingPlatform: req.body.streamingPlatform,
-      description: req.body.description,
+      name,
+      streamingPlatform,
+      description,
     };
 
-    const newAddedStreamer = new Streamer(streamerData);
-    await newAddedStreamer.save();
-    io.emit("getAddedStreamer", newAddedStreamer);
-    res.status(201).json({ message: "New streamer created", newAddedStreamer });
+    try {
+      const newStreamer = await streamerService.createStreamer(streamerData);
+
+      io.emit("getAddedStreamer", {
+        ...newStreamer.toObject(),
+      });
+
+      res.status(201).json({
+        message: "New streamer created",
+      });
+    } catch (error) {
+      next(error);
+    }
   }),
 
-  getStreamerById: asyncHandler(async (req, res, next) => {
+  getStreamerByIdController: asyncHandler(async (req, res, next) => {
     const streamerId = req.params.id;
-    const streamer = await Streamer.findById(streamerId).exec();
-    if (!streamer)
-      return res.status(404).json({ message: "Streamer not found" });
-    res.send(streamer);
+
+    try {
+      const streamerById = await streamerService.fetchStreamerById(streamerId);
+      res.send(streamerById);
+    } catch (error) {
+      next({ status: 404, message: "Streamer not found" });
+    }
   }),
 
-  upvoteStreamer: asyncHandler(async (req, res, next) => {
-    const streamerId = req.params.id;
-    const voteType = req.body.voteType;
+  upvoteStreamerController: asyncHandler(async (req, res, next) => {
+    const { streamerId } = req.params;
+    const { voteType, userId } = req.body;
 
-    let upvotedStreamer;
-
-    if (voteType === "upvote") {
-      upvotedStreamer = await Streamer.findByIdAndUpdate(
+    try {
+      const updatedStreamer = await streamerService.updateVote(
         streamerId,
-        { $inc: { votes: 1 } },
-        { new: true }
+        userId,
+        voteType
       );
-      io.emit("upvotedStreamer", upvotedStreamer);
-    } else if (voteType === "downvote") {
-      upvotedStreamer = await Streamer.findByIdAndUpdate(
-        streamerId,
-        { $inc: { votes: -1 } },
-        { new: true }
-      );
-      io.emit("upvotedStreamer", upvotedStreamer);
-    }
-    if (!upvotedStreamer) {
-      return res.status(404).json({ message: "Streamer not found" });
-    }
 
-    await upvotedStreamer.save();
-    res
-      .status(200)
-      .json({ message: "Vote updated", streamer: upvotedStreamer });
+      io.emit("upvotedStreamer", {
+        ...updatedStreamer.toObject(),
+        totalVotes: updatedStreamer.totalVotes,
+      });
+
+      res.status(200).json({
+        message: "Vote updated",
+      });
+    } catch (error) {
+      next(error);
+    }
   }),
 };
 
-export default StreamersController;
+export default streamersController;

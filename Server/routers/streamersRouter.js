@@ -1,10 +1,18 @@
-import StreamersController from "../controllers/streamersControllers.js";
 import { Router } from "express";
+import streamersController from "../controllers/streamersControllers.js";
+import { validateStreamerInputMiddleware } from "../middleware/validateStreamerMiddleware.js";
 
 const streamersRouter = Router();
 
-streamersRouter.post("/", StreamersController.addStreamer);
-streamersRouter.get("/", StreamersController.getAllStreamers);
-streamersRouter.put("/:id/vote", StreamersController.upvoteStreamer);
+streamersRouter.post(
+  "/",
+  validateStreamerInputMiddleware,
+  streamersController.createStreamerController
+);
+streamersRouter.get("/", streamersController.getAllStreamersController);
+streamersRouter.put(
+  "/:streamerId/vote",
+  streamersController.upvoteStreamerController
+);
 
 export default streamersRouter;
