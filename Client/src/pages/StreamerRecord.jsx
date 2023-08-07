@@ -1,59 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
-import { getStreamerById } from "../axios/axios";
-import GoBack from "../components/buttons/GoBack";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import { Image, Stack } from "react-bootstrap";
-import VoteCount from "../components/vote-count/VoteCount";
+import StreamingPlatform from "../components/common/StreamingPlatform";
+import useStreamerRecord from "../hooks/useStreamerRecord";
+import useLinkNavigation from "../hooks/useLinkNavigation";
+import useLoadingAndErrorHandling from "../hooks/useLoadingAndErrorHandling";
+import { arrowLeftLong } from "../assets/icons.js";
 
 const StreamerRecord = () => {
-  const [streamer, setStreamer] = useState([]);
   const { id } = useParams();
+  const { streamer, isLoading, error } = useStreamerRecord(id);
+  const { navigateToLink } = useLinkNavigation();
+  const loadingAndErrorComponent = useLoadingAndErrorHandling(isLoading, error);
 
-  useEffect(() => {
-    getStreamer();
-  }, []);
-
-  const getStreamer = async () => {
-    const streamerData = await getStreamerById(id);
-    setStreamer(streamerData);
-  };
+  if (loadingAndErrorComponent) {
+    return loadingAndErrorComponent;
+  }
 
   return (
-    <Container>
-      <Row>
-        <Col sm={4}>
-          <Image
-            src={streamer.profilePicture}
-            style={{ width: "200px", height: "200px" }}
-            roundedCircle
-          />
-        </Col>
-        <Col>
-          <Stack gap={3}>
-            <div className="p-2">
-              <h3>Name:</h3>
-              <p>{streamer.name}</p>
-            </div>
-            <div className="p-2">
-              <h5>About:</h5>
-              <p>{streamer.description}</p>
-            </div>
-            <div className="p-2">
-              <h5>Streaming Platform:</h5>
-              <p>{streamer.streamingPlatform}</p>
-            </div>
-            <div className="p-2">
-              <h5>Votes:</h5>
-              <VoteCount streamerVotes={streamer.votes} />
-            </div>
-          </Stack>
-          <GoBack />
-        </Col>
-      </Row>
-    </Container>
+    <div className="record-container" data-testid="streamer-record-page">
+      <div className="info-container">
+        <div className="body-container">
+          {streamer && (
+            <>
+              <img
+                src={streamer.profilePicture}
+                alt="streamer"
+                className="streamer-image"
+              />
+              <h2 className="streamer-name">{streamer.name}</h2>
+              <div className="streamer-platform">
+                <StreamingPlatform
+                  streamingPlatform={streamer.streamingPlatform}
+                />
+              </div>
+              <p className="streamer-description">{streamer.description}</p>
+
+              <button
+                className="btn btn-primary"
+                data-testid="back-button"
+                onClick={() => navigateToLink("/")}
+              >
+                {arrowLeftLong}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

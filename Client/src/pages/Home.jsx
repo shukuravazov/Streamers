@@ -1,22 +1,16 @@
-import React from "react";
-import StreamerForm from "../components/StreamerForm";
-import StreamersList from "../components/StreamersList";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
+import StreamerForm from "../components/forms/StreamerForm";
+import StreamersList from "../components/views/StreamersList";
 
 const Home = () => {
   return (
-    <Container>
-      <Row>
-        <Col sm={8}>
-          <StreamersList />
-        </Col>
-        <Col sm={4}>
-          <StreamerForm />
-        </Col>
-      </Row>
-    </Container>
+    <div className="home-container" data-testid="home-page">
+      <div className="streamer-list-container">
+        <StreamersList />
+      </div>
+      <div className="streamer-form-container">
+        <StreamerForm />
+      </div>
+    </div>
   );
 };
 

@@ -1,0 +1,19 @@
+.home-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+
+  .streamer-list-container {
+    flex-grow: 1;
+    margin: 5rem;
+  }
+
+  .streamer-form-container {
+    margin-right: 5rem;
+    flex-grow: 1;
+  }
+}

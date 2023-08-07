@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Streamer } from "./Streamer";
-import { getStreamers } from "../axios/axios";
+import { useEffect, useState } from "react";
+import { getStreamers } from "../api/streamersApi";
 import { socket } from "../socket";
-import { ListGroup } from "react-bootstrap";
 
-const StreamersList = () => {
+const useStreamersData = () => {
   const [streamers, setStreamers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     getAllStreamers();
@@ -17,7 +17,10 @@ const StreamersList = () => {
       setStreamers((prevStreamers) => {
         const upvotedStreamers = prevStreamers.map((streamer) => {
           if (streamer._id === upvotedStreamer._id) {
-            return upvotedStreamer;
+            return {
+              ...upvotedStreamer,
+              totalVotes: upvotedStreamer.totalVotes,
+            };
           }
           return streamer;
         });
@@ -32,20 +35,17 @@ const StreamersList = () => {
   }, []);
 
   const getAllStreamers = async () => {
-    const streamersData = await getStreamers();
-    setStreamers(streamersData);
+    try {
+      const streamersData = await getStreamers();
+      setStreamers(streamersData);
+      setIsLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
   };
 
-  return (
-    <div>
-      <h1>Streamers List</h1>
-      <ListGroup as="ul">
-        {streamers.map((streamer) => (
-          <Streamer key={streamer._id} streamer={streamer} />
-        ))}
-      </ListGroup>
-    </div>
-  );
+  return { streamers, isLoading, error };
 };
 
-export default StreamersList;
+export default useStreamersData;
